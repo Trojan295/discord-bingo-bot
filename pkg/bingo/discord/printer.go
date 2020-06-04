@@ -74,6 +74,14 @@ func PrintMessage(v interface{}, m *discordgo.MessageCreate) []string {
 	case game.BingoWonResponse:
 		boardMsgs := getBoardMessages(msg.Board)
 		return append([]string{fmt.Sprintf("**Yeah! %s, you won!**", m.Author.Mention())}, boardMsgs...)
+
+	case game.HelpResponse:
+		builder := strings.Builder{}
+		builder.WriteString("**Help:**\n")
+		for _, command := range msg.Commands {
+			builder.WriteString(fmt.Sprintf("`%s` - %s\n", command.Cmd, command.Description))
+		}
+		return []string{builder.String()}
 	}
 
 	return []string{}

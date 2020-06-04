@@ -22,6 +22,15 @@ type BingoWonResponse struct {
 	Board *Board
 }
 
+type Command struct {
+	Cmd         string
+	Description string
+}
+
+type HelpResponse struct {
+	Commands []Command
+}
+
 type GameRepository interface {
 	Persist(*Game) error
 	Get(ID string) (*Game, error)
@@ -51,7 +60,36 @@ func (ctrl *Controller) ProcessMessage(gameID, message string) (interface{}, err
 	}
 
 	unknownMessage := TextMessage{
-		Text: "Emm.. Could you repeat, please?",
+		Text: "Emm.. Could you repeat, please? Or type .bingo help",
+	}
+
+	if message == ".bingo help" {
+		return HelpResponse{
+			[]Command{
+				{
+					Cmd:         ".bingo list",
+					Description: "lists all texts",
+				}, {
+					Cmd:         ".bingo clear",
+					Description: "clear texts",
+				}, {
+					Cmd:         ".bingo add <text>",
+					Description: "add text",
+				}, {
+					Cmd:         ".bingo remove <number>",
+					Description: "remove text at given position",
+				}, {
+					Cmd:         ".bingo new",
+					Description: "start new board",
+				}, {
+					Cmd:         ".bingo show",
+					Description: "show the board",
+				}, {
+					Cmd:         ".bingo mark <number>",
+					Description: "mark the field on the board",
+				},
+			},
+		}, nil
 	}
 
 	if message == ".bingo list" {
@@ -156,7 +194,9 @@ func (ctrl *Controller) removeText(game *Game, pos int) (interface{}, error) {
 
 func (ctrl *Controller) newBoard(game *Game) (interface{}, error) {
 	if err := game.NewBoard(); err != nil {
-		return nil, err
+		return TextMessage{
+			Text: fmt.Sprintf("Missing texts. There are %d", len(game.Texts)),
+		}, nil
 	}
 
 	if err := ctrl.gamesRepository.Persist(game); err != nil {
