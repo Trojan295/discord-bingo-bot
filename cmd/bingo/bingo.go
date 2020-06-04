@@ -65,22 +65,6 @@ func main() {
 	dg.Close()
 }
 
-func writeMessage(s *discordgo.Session, m *discordgo.MessageCreate, message string) {
-	lines := strings.Split(message, "\n")
-
-	buffer := strings.Builder{}
-	for _, line := range lines {
-		if buffer.Len()+len(line) > 2000 {
-			s.ChannelMessageSend(m.ChannelID, buffer.String())
-			buffer.Reset()
-		}
-
-		buffer.WriteString(line)
-		buffer.WriteRune('\n')
-	}
-	s.ChannelMessageSend(m.ChannelID, buffer.String())
-}
-
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.Author.ID == s.State.User.ID || !strings.HasPrefix(m.Content, ".bingo") {
@@ -90,7 +74,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	response, err := controller.ProcessMessage(m.ChannelID, m.Content)
 	if err != nil {
 		log.Printf("cannot process message: %v", err.Error())
-		writeMessage(s, m, "Bingo bot currently not available...")
+		s.ChannelMessageSend(m.ChannelID, "Bingo bot currently not available...")
 	}
 
 	if response == nil {
