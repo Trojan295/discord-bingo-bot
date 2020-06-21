@@ -12,17 +12,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type GameRepository struct {
+type MongoGameRepository struct {
 	client *mongo.Client
 }
 
-func NewGameRepository(URI string) (*GameRepository, error) {
+func NewMongoGameRepository(URI string) (*MongoGameRepository, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(URI))
 	if err != nil {
 		return nil, err
 	}
 
-	repo := &GameRepository{
+	repo := &MongoGameRepository{
 		client: client,
 	}
 	if err = repo.connect(); err != nil {
@@ -32,7 +32,7 @@ func NewGameRepository(URI string) (*GameRepository, error) {
 	return repo, nil
 }
 
-func (r *GameRepository) connect() error {
+func (r *MongoGameRepository) connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -49,7 +49,7 @@ func serializeGame(g *game.Game) bson.M {
 	return doc
 }
 
-func (r *GameRepository) Persist(g *game.Game) error {
+func (r *MongoGameRepository) Persist(g *game.Game) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -78,7 +78,7 @@ func (r *GameRepository) Persist(g *game.Game) error {
 	return nil
 }
 
-func (r *GameRepository) Get(GameID string) (*game.Game, error) {
+func (r *MongoGameRepository) Get(GameID string) (*game.Game, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

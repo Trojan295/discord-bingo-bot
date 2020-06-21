@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -13,26 +14,41 @@ import (
 	"github.com/Trojan295/discord-bingo-bot/pkg/bingo/discord"
 	"github.com/Trojan295/discord-bingo-bot/pkg/bingo/game"
 	"github.com/Trojan295/discord-bingo-bot/pkg/bingo/repository"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/bwmarrin/discordgo"
+	"github.com/sirupsen/logrus"
 )
 
 var (
 	token      string
+	tableName  string
 	controller *game.Controller
 )
 
 func init() {
+	debug := flag.Bool("debug", false, "")
+	flag.Parse()
+
+	if *debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
+
 	var ok bool
 	if token, ok = os.LookupEnv("DISCORD_BOT_TOKEN"); !ok {
 		panic("Missing DISCORD_BOT_TOKEN")
 	}
 
-	mongoURI, ok := os.LookupEnv("MONGO_URI")
-	if !ok {
-		panic("Missing MONGO_URI")
+	if tableName, ok = os.LookupEnv("DYNAMODB_TABLE_NAME"); !ok {
+		tableName = "bingo-games"
 	}
 
-	gameRepository, err := repository.NewGameRepository(mongoURI)
+	awsSession, err := session.NewSession()
+	if err != nil {
+		logrus.Panicf("cannot create AWS session: %s", err.Error())
+		panic("Cannot create AWS session")
+	}
+
+	gameRepository, err := repository.NewDynamoDBGameRepository(awsSession, tableName)
 	if err != nil {
 		panic(err)
 	}
