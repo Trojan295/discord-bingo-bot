@@ -1,4 +1,4 @@
-IMAGE_NAME=146986152083.dkr.ecr.eu-central-1.amazonaws.com/bingo-bot
+IMAGE_NAME=rg.fr-par.scw.cloud/discordbots/bingo-bot:latest
 
 .PHONY: build push
 
