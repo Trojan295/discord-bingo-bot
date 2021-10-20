@@ -81,6 +81,12 @@ func PrintMessage(v interface{}, m *discordgo.MessageCreate) []string {
 		for _, command := range msg.Commands {
 			builder.WriteString(fmt.Sprintf("`%s` - %s\n", command.Cmd, command.Description))
 		}
+
+		if msg.ContactPage != "" {
+			builder.WriteString("\n")
+			builder.WriteString(fmt.Sprintf("You can get support for the bot here: %s.\n", msg.ContactPage))
+		}
+
 		return []string{builder.String()}
 	}
 

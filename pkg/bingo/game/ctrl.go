@@ -6,6 +6,10 @@ import (
 	"strconv"
 )
 
+const (
+	contactPage = "https://github.com/Trojan295/discord-bingo-bot"
+)
+
 type TextMessage struct {
 	Text string
 }
@@ -28,7 +32,8 @@ type Command struct {
 }
 
 type HelpResponse struct {
-	Commands []Command
+	Commands    []Command
+	ContactPage string
 }
 
 type GameRepository interface {
@@ -65,7 +70,7 @@ func (ctrl *Controller) ProcessMessage(gameID, message string) (interface{}, err
 
 	if message == ".bingo help" {
 		return HelpResponse{
-			[]Command{
+			Commands: []Command{
 				{
 					Cmd:         ".bingo list",
 					Description: "lists all texts",
@@ -89,6 +94,7 @@ func (ctrl *Controller) ProcessMessage(gameID, message string) (interface{}, err
 					Description: "mark the field on the board",
 				},
 			},
+			ContactPage: contactPage,
 		}, nil
 	}
 
@@ -133,6 +139,12 @@ func (ctrl *Controller) ProcessMessage(gameID, message string) (interface{}, err
 
 	markFieldRegex := regexp.MustCompile(`^.bingo mark (.+)$`)
 	if match := markFieldRegex.FindStringSubmatch(message); len(match) > 0 {
+		if game.Board == nil {
+			return TextMessage{
+				Text: "You don't have started. Type .bingo new",
+			}, nil
+		}
+
 		pos, err := strconv.Atoi(match[1])
 		if err != nil {
 			return unknownMessage, err

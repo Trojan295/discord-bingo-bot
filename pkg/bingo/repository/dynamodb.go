@@ -2,11 +2,17 @@ package repository
 
 import (
 	"encoding/json"
+	"fmt"
+	"time"
 
 	"github.com/Trojan295/discord-bingo-bot/pkg/bingo/game"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	ttl = 30 * 24 * time.Hour
 )
 
 type DynamoDBGameRepository struct {
@@ -56,12 +62,19 @@ func (repo *DynamoDBGameRepository) Persist(g *game.Game) error {
 		return err
 	}
 
+	ttlAttr := time.Now().Add(ttl)
+
+	now := fmt.Sprintf("%d", ttlAttr.Unix())
+
 	item := map[string]*dynamodb.AttributeValue{
 		"GameId": {
 			S: &g.ID,
 		},
 		"Data": {
 			B: encodedGame,
+		},
+		"UpdatedAt": {
+			N: &now,
 		},
 	}
 
